@@ -1,10 +1,11 @@
-# Restream Clipping Context (handoff)
+# Restream Context: Streams, Recordings & Clipping (handoff)
 
 _Snapshot taken 2026-11-05 through the Restream MCP server._
 
 ## TL;DR
 - Account-level clipping settings (clip length, aspect ratio, captions, branding, auto-clip defaults) are **not exposed** by the Restream MCP. They can only be viewed or changed in the Restream web app.
 - The account has **1 clips project** with **4 AI-generated clips**. None have been posted to platforms.
+- The account streams two recurring shows (Dojo Coding Studio, Deporte+) to 22 channels. Recordings expire after ~15 days.
 - `remotion-media-mcp` has **no Restream integration** yet.
 
 ## Account
@@ -35,6 +36,59 @@ _Snapshot taken 2026-11-05 through the Restream MCP server._
 Notes:
 - The API returns `sourceStartSeconds` / `sourceEndSeconds` = null and `viralityScoreExplanation` = null for all clips.
 - Each clip includes a full transcript and a thumbnail URL. Fetch them with `get_user_clips_project_details`.
+
+## Streams (events)
+- The account has **241 finished events** in total. It has **0 scheduled** events right now.
+- Every recent event uses **Studio** as its source.
+- There are two recurring shows:
+  - **Dojo Coding Studio**: about twice a week, starting ~01:00 UTC (~7 pm Costa Rica the evening before). Each runs ~1.5–2.3 h.
+  - **Deporte+**: Sundays, starting ~14:00–16:00 UTC (~8–10 am Costa Rica). Each runs ~1 h. Spanish, Costa Rican football.
+
+### Most recent finished events (newest first)
+| Date (UTC start) | Title | Duration |
+|---|---|---|
+| 2026-11-04 | Dojo Coding Studio | ~1h40m |
+| 2026-11-01 | Hoy se juega el CLÁSICO NACIONAL \| Deporte+ | ~1h00m |
+| 2026-10-30 | Dojo Coding Studio | ~1h38m |
+| 2026-10-28 | Dojo Coding Studio | ~2h20m |
+| 2026-10-25 | Se jugó la IDA en Copa Centroamericana \| Deporte+ | ~1h01m |
+| 2026-10-23 | Dojo Coding Studio | ~1h58m |
+| 2026-10-21 | Dojo Coding Studio | ~1h59m |
+| 2026-10-18 | Alvaro Sanchez y Jason Arce nos acompañan \| Crimen Organizado en el Futbol \| Deporte+ | ~1h01m |
+| 2026-10-11 | Mauricio Wright y Oscar Valverde en Deporte+ | ~1h13m |
+| 2026-10-04 | La Selección con Claudio Ciccia y Andrey Campos | ~1h03m |
+| 2026-10-01 | Dojo Coding Studio | ~1h45m |
+
+## Recordings (downloadable, they EXPIRE)
+Restream keeps recordings for ~15 days. Only these 6 are still available. **Download any you want to clip or edit before they expire.**
+
+| Event date | Title | Length | Files | Expires (UTC) |
+|---|---|---|---|---|
+| 2026-11-04 | Dojo Coding Studio | 1h40m | video + audio | 2026-11-19 |
+| 2026-11-01 | Deporte+ (Clásico Nacional)* | 1h00m | video, secondary video, audio | 2026-11-16 |
+| 2026-10-30 | Dojo Coding Studio | 1h38m | video + audio | 2026-11-14 |
+| 2026-10-28 | Dojo Coding Studio | 2h20m | video + audio | 2026-11-12 |
+| 2026-10-25 | Deporte+ (Copa Centroamericana IDA) | 1h01m | video, secondary video, audio | 2026-11-09 |
+| 2026-10-23 | Dojo Coding Studio | 1h58m | video + audio | **2026-11-07 (2 days left)** |
+
+\* The recording for the 11-01 event is titled "Se jugó la IDA en Copa Centroamericana", but its event is "Hoy se juega el CLÁSICO NACIONAL". It looks like a reused title. Match recordings by event, not by title.
+
+The Deporte+ recordings include a **secondary video** track, which is probably a separate camera or vertical layout.
+
+Recording tools: `list_user_recordings` (optionally filter by `eventId`), `get_recording_download_url`. Transcripts: `list_event_transcriptions` (calling it starts transcription if none exists), `get_event_transcript`.
+
+Any of these event recordings can be used as a new clips project source: `create_user_clips_project` with `sourceType: "Event"` and the `eventId`. Only one event (an older RTMP stream) has been clipped so far.
+
+## Connected channels (destinations)
+22 channels across 4 brands/people:
+
+| Brand | Channels |
+|---|---|
+| **Dojo Coding / trydojo.io** | YouTube "Dojo Coding", TikTok "Dojo Coding", TikTok "trydojo.io", Instagram "trydojo.io", LinkedIn "Dojo Coding", Facebook "DOJO", Custom RTMP "DojoOS PROD" |
+| **Deporte+ (Deportemascr)** | YouTube "Deportemascr", Facebook "DeportemasCR", Instagram "deportemascr", TikTok "Deportemascr", YouTube "La Mesa De los 10" |
+| **Personal / hosts** | YouTube "jeaustin campos", Instagram "jeaustincamposb"; Pablo Izaguirre (YouTube, Facebook, TikTok, Instagram); Roy Myers / "El Maravilloso Myers" (YouTube, Facebook, Instagram); Facebook "Kenneth Paniagua" |
+
+Use `list_channels` to get IDs and URLs. Use `get_event` / `list_event_destinations` to see which channels a given event went to.
 
 ## Clipping controls available through the MCP
 These parameters only apply when you **create a new project** (`create_user_clips_project`):
